@@ -8,7 +8,6 @@ RUN rm src/*.rs
 
 ADD ./ .
 
-RUN rm ./target/release/deps/backend*
 RUN cargo build --release
 
 FROM debian:buster-slim

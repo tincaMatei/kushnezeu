@@ -6,13 +6,22 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: password
+    networks:
+      - server-network
     ports:
       - "5432:5432"
   backend:
     build: './backend'
+    networks:
+      - server-network
     ports:
       - "8080:8080"
   frontend:
     build: './frontend'
+    networks:
+      - server-network
     ports:
       - "80:80"
+networks:
+  server-network:
+    driver: bridge
