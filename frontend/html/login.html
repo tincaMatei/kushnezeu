@@ -1,0 +1,25 @@
+<DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+
+<head>
+    <title>Frontend</title>
+</head>
+
+<script src="cookie.js"></script>
+<script src="login.js"></script>
+
+<body>
+    <a href="index.html"><p>home</p></a>
+    <p>Login:</p>
+    <form id="login" action="javascript:void(0)" onsubmit="submit_login()">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username"><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password">
+        <input type="submit" value="Submit">
+    </form>
+    <p id="error"></p>
+</body>
+
+</html>

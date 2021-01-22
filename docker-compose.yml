@@ -16,12 +16,16 @@ services:
       - server-network
     ports:
       - "8080:8080"
+    depends_on:
+      - database
   frontend:
     build: './frontend'
     networks:
       - server-network
     ports:
       - "80:80"
+    depends_on:
+      - backend
 networks:
   server-network:
     driver: bridge
