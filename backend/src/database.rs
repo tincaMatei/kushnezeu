@@ -19,9 +19,6 @@ impl DatabaseServer {
         dotenv().ok();
         let database_url = env::var("DATABASE_URL")
             .expect("DATABASE_URL must be set");
-        
-        let db_connection = PgConnection::establish(&database_url)
-            .expect(&format!("Error connecting to {}", database_url));
        
         DatabaseServer {
             database_url,
@@ -33,6 +30,7 @@ impl DatabaseServer {
     }
 
     pub fn run_migrations(&self) {
-        embedded_migrations::run(&self.connect().unwrap());
+        embedded_migrations::run(&self.connect().unwrap())
+            .expect("Failed to run migrations");
     }
 }
