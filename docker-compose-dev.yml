@@ -11,7 +11,9 @@ services:
     ports:
       - "5432:5432"
   backend:
-    build: './backend'
+    build:
+      context: './backend'
+      dockerfile: 'Dockerfile-dev'
     networks:
       - server-network
     ports:

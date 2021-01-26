@@ -1,0 +1,16 @@
+FROM ubuntu:latest
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+MAINTAINER Matei Tinca (tinca.matei02@gmail.com)
+
+WORKDIR /usr/bacdb
+
+EXPOSE 8080
+RUN apt-get update && apt-get install -y libpq5 postgresql && rm -rf /var/lib/apt/lists/*
+COPY ./backend .
+COPY ./.env .
+COPY wait-for-postgres.sh startup.sh
+RUN chmod +x startup.sh
+ENTRYPOINT ["./startup.sh"]
+
