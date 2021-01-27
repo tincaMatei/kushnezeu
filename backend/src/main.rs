@@ -5,33 +5,11 @@ extern crate diesel_migrations;
 
 use self::backend::*;
 use self::models::*;
-use self::diesel::prelude::*;
 use self::database::DatabaseServer;
 
 use tide::prelude::*;
 
 pub mod database;
-
-// Return a hex token of n bytes
-fn lazy_token(n: usize) -> String {
-    const CHARSET: &[u8] = b"abcdef0123456789";
-    
-    use rand::Rng;
-    let mut rng = rand::thread_rng();
-    let token: String = (0..n)
-        .map(|_| {
-            let idx = rng.gen_range(0..CHARSET.len());
-            CHARSET[idx] as char
-        })
-        .collect();
-    token
-}
-
-#[derive(Default, Deserialize)]
-#[serde(default)]
-struct SessionId {
-    session_id: String,
-}
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
@@ -45,51 +23,26 @@ async fn main() -> tide::Result<()> {
         let mut user: backend::models::User = req.body_form().await?;
         
         user.username = user.username.to_lowercase();
-
-        use schema::users::dsl::*;
-        let results = users.filter(username.eq(user.username))
-            .limit(1)
-            .load::<User>(&req.state().connect().unwrap())
-            .expect("Error loading post");
-        
-        println!("{:?}", results);
+        let user_from_db = req.state().get_user_by_username(user.username);
         
         // We found an entry in the database of the given user
-        if results.len() == 1 {
-            if results[0].password == user.password { // The password matches
-                // We create a session_id token
-                let token = lazy_token(64);
-
-                // We should insert this token into the database
+        if let Some(user_from_db) = user_from_db {
+            if user_from_db.password == user.password { // The password matches
+                let new_session = req.state().create_new_session(user_from_db.id);
                 
-                let mut expire_date = chrono::offset::Utc::now().naive_utc();
-                expire_date = expire_date + chrono::Duration::hours(12);
-                let new_session = Session {
-                    session_id: &token,
-                    user_id: results[0].id,
-                    expire: expire_date,
-                };
-
-                use schema::sessions;
-                let result = diesel::insert_into(sessions::table)
-                    .values(new_session)
-                    .get_result::<(String, i32, chrono::NaiveDateTime)>(&req.state().connect().unwrap());
-                
-                println!("Added session: {:?}", result);
-
-                if let Err(_) = result {
+                if let Some(new_session) = new_session {
+                    println!("Expire date: {}", new_session.expire.to_string());
+                    Ok(json!( {
+                        "error" : false,
+                        "error_msg" : "Login successful",
+                        "session_id" : new_session.session_id,
+                        "expire" : new_session.expire.to_string()
+                    } ))
+                } else {
                     Ok(json!( {
                         "error" : true,
                         "error_msg" : "Database error: Failed to insert session into database",
                         "session_id" : "",
-                    } ))
-                } else {
-                    println!("Expire date: {}", expire_date.to_string());
-                    Ok(json!( {
-                        "error" : false,
-                        "error_msg" : "Login successful",
-                        "session_id" : token,
-                        "expire" : expire_date.to_string()
                     } ))
                 }
             } else {
@@ -109,137 +62,130 @@ async fn main() -> tide::Result<()> {
     });
 
     app.at("/logout").post(|mut req: tide::Request<DatabaseServer>| async move {
-        let session: SessionId = req.body_form().await?;
+        let session: Session = req.body_form().await?;
         println!("Session_id: {}", session.session_id);
-        use backend::schema::sessions::dsl::*;
-        let expire_date = chrono::offset::Utc::now().naive_utc();
-        let num_deleted = diesel::delete(sessions.filter(session_id.eq(&session.session_id).or(&expire.le(expire_date))))
-            .execute(&req.state().connect().unwrap())
-            .expect("Failed to delete the session");
-        println!("Deleted session {}", num_deleted);
+        
+        req.state().delete_session(session.session_id);
+        
         Ok("Erased session")
     });
 
     app.at("/refresh-session").post(|mut req: tide::Request<DatabaseServer>| async move {
-        let session: SessionId = req.body_form().await?;
+        let session: Session = req.body_form().await?;
         
-        let expire_date = chrono::offset::Utc::now().naive_utc();
-        let expire_date = expire_date + chrono::Duration::hours(12);
-        use backend::schema::sessions::dsl::*;
-       
-        let updated = diesel::update(sessions.find(session.session_id))
-            .set(expire.eq(expire_date));
+        let expire_date = chrono::offset::Utc::now().naive_utc()
+            + chrono::Duration::hours(12);
         
-        println!("Refreshed session: {:?}", updated);
+        req.state().set_session_expire_date(session.session_id, expire_date);
 
         Ok(json!( { "expire" : expire_date.to_string() } ))
     });
 
     // Return the content from the page
     app.at("/content/:group/:page/read").post(|mut req: tide::Request<DatabaseServer>| async move {
-        let user_session: SessionId = req.body_form().await?;
+        let user_session: Session = req.body_form().await?;
         
         let group_name = req.param("group").expect("Failed to get group name");
         let page_name = req.param("page").expect("Failed to get page name");
 
-        use backend::schema::sessions::dsl::*;
-        let session = sessions.filter(session_id.eq(user_session.session_id))
-            .limit(1)
-            .load::<(String, i32, chrono::NaiveDateTime)>(&req.state().connect().unwrap())
-            .expect("Error loading session");
-
-        if session.len() == 0 {
-            return Ok(json!( {
+        let session = req.state().get_session_by_id(user_session.session_id);
+        let session = if let Some(x) = session {
+            x
+        } else {
+            return Ok(json!({
                 "error" : true,
-                "error_msg" : "Failed to find user session"
-            } ));
-        }
+                "error_msg" : "User not found"
+            }));
+        };
         
-        let (_, user, _) = session[0];
-        
-        /*use schema::users::dsl::*;
-        let results = users.filter(username.eq(user.username))
-            .limit(1)
-            .load::<User>(&req.state().connect().unwrap())
-            .expect("Error loading post");*/
-        
-        use schema::privillege::dsl::*;
-        let privilleges = privillege
-            .filter(groupname.eq(group_name)
-                .and(schema::privillege::user_id.eq(user))) 
-            .limit(1)
-            .load::<(i32, String, String)>(&req.state().connect().unwrap())
-            .expect("Error loading privilleges");
-        
-        if privilleges.len() == 0 {
-            return Ok(json!( {
+        let privillege = req.state().get_privillege(session.user_id, group_name.to_string());
+        let privillege = if let Some(x) = privillege {
+            x
+        } else {
+            return Ok(json!({
                 "error" : true,
-                "error_msg" : "You do not have any privilleges to access this group"
-            } ));
-        }
-        
-        let (_, _, user_rights) = &privilleges[0];
-        let user_rights = user_rights.as_bytes();
+                "error_msg" : "You do not have any privillege to watch this"
+            }));
+        };
 
-        if user_rights[0] == b'_' {
+        if privillege.rights.as_bytes()[0] != b'R' {
             Ok(json!({
                 "error" : true,
                 "error_msg" : "You do not have any privilleges to access this group"
             }))
         } else {
-            use schema::content::dsl::*;
-            let loaded_content = content
-                .filter(groupname.eq(group_name).and(page.eq(page_name)))
-                .limit(1)
-                .load::<(Option<String>, String, Option<String>)>(&req.state().connect().unwrap())
-                .expect("Failed to load content");
-
-            if loaded_content.len() == 0 {
-                Ok(json!({
-                    "error" : true,
-                    "error_msg" : "Content not found"
-                }))
+            let content = req.state().get_content(group_name.to_string(), page_name.to_string());
+            let content = if let Some(content) = content {
+                content
             } else {
-                let (_, _, loaded_content) = &loaded_content[0];
-                let loaded_content = if let Some(x) = loaded_content {
-                    x
-                } else {
-                    ""
-                };
-                Ok(json!({
+                return Ok(json!({
                     "error" : false,
-                    "error_msg" : "Content loaded properly",
-                    "content" : loaded_content
+                    "error_msg" : "This page is empty"
                 }))
-            }
+            };
+
+            Ok(json!({
+                "error" : false,
+                "error_msg" : "Content loaded properly",
+                "content" : content.contentbody
+            }))
         }
     });
 
-    app.at("/new-account").post(|mut req: tide::Request<DatabaseServer>| async move {
-        let user: backend::models::User = req.body_form().await?;
-        let new_user = NewUser {
-            username: &user.username.to_lowercase(),
-            password: &user.password
+    app.at("/content/:group/:page/write").post(|mut req: tide::Request<DatabaseServer>| async move {
+        let sent_data: SessionContentPost = req.body_form().await?;
+        
+        let group_name = req.param("group").expect("Failed to parse group name");
+        let page_name = req.param("page").expect("Failed to parse page name");
+
+        let session = req.state().get_session_by_id(sent_data.session_id);
+        let session = if let Some(x) = session {
+            x
+        } else {
+            return Ok(json!({
+                "error" : true,
+                "error_msg" : "Failed to find session"
+            }));
         };
 
-        use schema::users;
-        let result = diesel::insert_into(users::table)
-            .values(new_user)
-            .get_result::<(i32, String, String)>(&req.state().connect().unwrap())
-            .expect("Error creating new user");
-        Ok(format!("Created new user! {:?}", result))
+        let privillege = req.state().get_privillege(session.user_id, group_name.to_string());
+        let privillege = if let Some(x) = privillege {
+            x
+        } else {
+            return Ok(json!({
+                "error" : true,
+                "error_msg" : "You do not have permission to write on this page"
+            }));
+        };
+
+        if privillege.rights.as_bytes()[1] != b'W' {
+            return Ok(json!({
+                "error" : true,
+                "error_msg" : "You do not have permission to write on this page"
+            }));
+        }
+
+        req.state().add_content(group_name.to_string(), page_name.to_string(), sent_data.content);
+
+        Ok(json!({
+            "error" : false,
+            "error_msg" : "Page added"
+        }))
+    });
+
+    app.at("/new-account").post(|mut req: tide::Request<DatabaseServer>| async move {
+        let user: NewUser = req.body_form().await?;
+
+        req.state().add_account(&user);
+
+        Ok(format!("Created new user! {:?}", user))
     });
    
     app.at("/add-group").post(|mut req: tide::Request<DatabaseServer>| async move {
         let group: Group = req.body_form().await?;
-        println!("Adding group: {}", group.name);
-        use schema::groups::dsl::*;
-        let results = diesel::insert_into(schema::groups::table)
-            .values(group)
-            .get_result::<Group>(&req.state().connect().unwrap())
-            .expect("Failed to add group");
-
-        println!("Added group: {:?}", results);
+        
+        req.state().add_group(&group);
+        println!("Added group: {}", group.name);
 
         Ok("Added group")
     });
@@ -247,30 +193,57 @@ async fn main() -> tide::Result<()> {
     app.at("/add-privillege").post(|mut req: tide::Request<DatabaseServer>| async move {
         let mut added_privillege: PrivillegeByUsername = req.body_form().await?;
         added_privillege.username = added_privillege.username.to_lowercase();
-
-        use schema::users::dsl::*;
-        let results = users.filter(username.eq(added_privillege.username))
-            .limit(1)
-            .load::<User>(&req.state().connect().unwrap())
-            .expect("Error loading post");
-       
-        if results.len() == 0 {
-            return Ok("No users to add privillege");
-        }
         
-        let added_privillege: Privillege = Privillege {
-            user_id: results[0].id,
-            groupname: added_privillege.groupname,
-            rights: added_privillege.rights,
+        let user = req.state().get_user_by_username(added_privillege.username);
+        let user = if let Some(x) = user {
+            x
+        } else {
+            return Ok("Failed to find requested user");
+        };
+        
+        assert_eq!(added_privillege.rights.len(), 4);
+        for i in 0..4 {
+            assert!(added_privillege.rights.as_bytes()[i] == b'_' ||
+                    added_privillege.rights.as_bytes()[i] == b"RWXX"[i]);
+        }
+
+        req.state().add_privillege(user.id, added_privillege.groupname, added_privillege.rights);
+        
+        Ok("Added privillege")
+    });
+
+    app.at("/get-rights/:group").post(|mut req: tide::Request<DatabaseServer>| async move {
+        let session: Session = req.body_form().await?;
+        
+        let group_name = req.param("group").expect("Failed to parse group_name");
+        
+        let session = req.state().get_session_by_id(session.session_id);
+        let session = if let Some(x) = session {
+            x
+        } else {
+            return Ok(json!({
+                "error" : true,
+                "error_msg" : "Session not found",
+                "rights" : "____"
+            }));
         };
 
-        let result = diesel::insert_into(schema::privillege::table)
-            .values(added_privillege)
-            .get_result::<Privillege>(&req.state().connect().unwrap())
-            .expect("Failed to add privillege");
+        let privillege = req.state().get_privillege(session.user_id, group_name.to_string());
+        let privillege = if let Some(x) = privillege {
+            x
+        } else {
+            return Ok(json!({
+                "error" : true,
+                "error_msg" : "You do not have any privilleges for the group",
+                "rights" : "____"
+            }));
+        };
 
-        println!("Added new privillege: {:?}", result);
-        Ok("Added privillege")
+        Ok(json!({
+            "error" : false,
+            "error_msg" : "Rights loaded properly",
+            "rights" : privillege.rights
+        }))
     });
 
     app.listen("0.0.0.0:8080").await?;

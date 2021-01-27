@@ -10,21 +10,31 @@ pub struct User {
     pub password: String,
 }
 
-#[derive(Insertable, Debug)]
+#[derive(Insertable, Debug, Default, Deserialize)]
 #[table_name="users"]
-pub struct NewUser<'a> {
-    pub username: &'a str,
-    pub password: &'a str,
+pub struct NewUser {
+    pub username: String,
+    pub password: String,
 }
 
 #[derive(Debug, Deserialize, Insertable, Queryable, Associations)]
 #[belongs_to(User)]
 #[table_name = "sessions"]
 #[serde(default)]
-pub struct Session<'a> {
-    pub session_id: &'a str,
+pub struct Session {
+    pub session_id: String,
     pub user_id: i32,
     pub expire: chrono::NaiveDateTime,
+}
+
+impl Default for Session {
+    fn default() -> Self { 
+        Self {
+            session_id: String::new(),
+            user_id: 0,
+            expire: chrono::NaiveDateTime::from_timestamp(0, 0), 
+        }
+    }
 }
 
 #[derive(Debug, Default, Deserialize, Insertable, Queryable, Associations)]
@@ -34,13 +44,13 @@ pub struct Group {
     pub name: String,
 }
 
-#[derive(Debug, Deserialize, Insertable, Queryable)]
+#[derive(Debug, Default, Deserialize, Insertable, Queryable)]
 #[table_name = "content"]
 #[serde(default)]
-pub struct Content<'a> {
-    pub groupname: &'a str,
-    pub page: &'a str,
-    pub contentbody: &'a str,
+pub struct Content {
+    pub groupname: Option<String>,
+    pub page: String,
+    pub contentbody: Option<String>,
 }
 
 #[derive(Debug, Default, Deserialize, Insertable, Queryable)]
@@ -58,5 +68,12 @@ pub struct PrivillegeByUsername {
     pub username: String,
     pub groupname: String,
     pub rights: String,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct SessionContentPost {
+    pub session_id: String,
+    pub content: String,
 }
 
