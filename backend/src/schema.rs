@@ -1,6 +1,6 @@
 table! {
-    content (page) {
-        groupname -> Nullable<Varchar>,
+    content (groupname, page) {
+        groupname -> Varchar,
         page -> Varchar,
         contentbody -> Nullable<Varchar>,
     }

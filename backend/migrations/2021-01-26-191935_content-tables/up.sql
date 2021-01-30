@@ -5,8 +5,9 @@ CREATE TABLE groups (
 
 CREATE TABLE content (
     groupname VARCHAR references groups(name),
-    page VARCHAR PRIMARY KEY,
-    contentbody VARCHAR
+    page VARCHAR NOT NULL,
+    contentbody VARCHAR,
+    PRIMARY KEY(groupname, page)
 );
 
 CREATE TABLE privillege (
