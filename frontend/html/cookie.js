@@ -16,7 +16,7 @@ function get_cookie(cname) {
 }
 
 function set_cookie(cname, value, expiredate=null) {
-    let cookie_str = cname + "=" + value + ";";
+    let cookie_str = cname + "=" + value + ";path=/;";
     if(expiredate != null) {
         cookie_str = cookie_str + "expires=" + expiredate;
     }
@@ -25,6 +25,7 @@ function set_cookie(cname, value, expiredate=null) {
 }
 
 function delete_cookie(cname) {
-    document.cookie = cname + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+    document.cookie = cname + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+    console.log("Erasing cookie: " + cname);
 }
 

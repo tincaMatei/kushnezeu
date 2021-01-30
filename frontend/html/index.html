@@ -6,17 +6,20 @@
     <title>Frontend</title>
 </head>
 
-<script src="cookie.js"></script>
-<script src="account.js"></script>
+<script src="/static/cookie.js"></script>
+<script src="/static/account.js"></script>
+<script src="/static/index.js"></script>
 <script>
 
-window.onload = account_div;
+window.onload = load_home;
 
 </script>
 
 <body>
-    <a href="login.html" id="login-button"><p>Login</p></a>
+    <a href="/login" id="login-button"><p>Login</p></a>
     <a onclick="submit_logout()" id="logout-button"><p>Logout</p></a>
+    <ul id="group-list">
+    </ul>
 </body>
 
 </html>

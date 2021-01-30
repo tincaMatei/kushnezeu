@@ -120,7 +120,8 @@ async fn main() -> tide::Result<()> {
             } else {
                 return Ok(json!({
                     "error" : false,
-                    "error_msg" : "This page is empty"
+                    "error_msg" : "This page is empty",
+                    "content" : "This page is empty"
                 }))
             };
 
@@ -137,8 +138,10 @@ async fn main() -> tide::Result<()> {
         
         let group_name = req.param("group").expect("Failed to parse group name");
         let page_name = req.param("page").expect("Failed to parse page name");
-
+        
+        println!("{}", sent_data.session_id);
         let session = req.state().get_session_by_id(sent_data.session_id);
+        println!("{:?}", session);
         let session = if let Some(x) = session {
             x
         } else {
@@ -183,7 +186,7 @@ async fn main() -> tide::Result<()> {
    
     app.at("/add-group").post(|mut req: tide::Request<DatabaseServer>| async move {
         let group: Group = req.body_form().await?;
-        
+        println!("Adding group: {:?}", group);
         req.state().add_group(&group);
         println!("Added group: {}", group.name);
 
@@ -215,7 +218,7 @@ async fn main() -> tide::Result<()> {
     app.at("/get-rights/:group").post(|mut req: tide::Request<DatabaseServer>| async move {
         let session: Session = req.body_form().await?;
         
-        let group_name = req.param("group").expect("Failed to parse group_name");
+        let group_name = req.param("group").expect("failed to parse group_name");
         
         let session = req.state().get_session_by_id(session.session_id);
         let session = if let Some(x) = session {
@@ -243,6 +246,27 @@ async fn main() -> tide::Result<()> {
             "error" : false,
             "error_msg" : "Rights loaded properly",
             "rights" : privillege.rights
+        }))
+    });
+
+    app.at("/list-groups").post(|mut req: tide::Request<DatabaseServer>| async move {
+        let session: Session = req.body_form().await?;
+        
+        let session = req.state().get_session_by_id(session.session_id);
+        let session = if let Some(x) = session {
+            x
+        } else {
+            return Ok(json!({
+                "error" : true,
+                "error_msg" : "session not found",
+            }));
+        };
+
+        let res = req.state().get_available_groups(session.user_id);
+        Ok(json!({
+            "error" : false,
+            "error_msg" : "Groups listed properly",
+            "groups" : res
         }))
     });
 

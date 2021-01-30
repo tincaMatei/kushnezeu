@@ -97,7 +97,6 @@ impl DatabaseServer {
         }
     }
     
-    // Delete all irrel
     pub fn delete_session(&self, target_session: String) {
         use backend::schema::sessions::dsl::*;
         let expire_date = chrono::offset::Utc::now().naive_utc();
@@ -153,6 +152,32 @@ impl DatabaseServer {
         loaded_content.pop()
     }
 
+    pub fn add_content(&self, group_name: String, page_name: String, added_content: String) {
+        let content_page = Content {
+            groupname: group_name.clone(),
+            page: page_name.clone(),
+            contentbody: Some(added_content)
+        };
+        
+        let added_content = self.get_content(group_name.clone(), page_name.clone());
+
+        match added_content {
+        None => {
+            let _result = diesel::insert_into(schema::content::table)
+                .values(content_page)
+                .get_result::<Content>(&self.connect().unwrap())
+                .expect("Failed to add content");
+        }
+        Some(_) => {
+            use backend::schema::content::dsl::*;
+            let _updated = diesel::update(content.find((group_name.clone(), page_name.clone())))
+                .set(contentbody.eq(content_page.contentbody))
+                .get_result::<Content>(&self.connect().unwrap())
+                .expect("Failed to modify content");
+        }
+        };
+    }
+
     pub fn add_group(&self, group_name: &Group) {
         let _results = diesel::insert_into(schema::groups::table)
             .values(group_name)
@@ -181,16 +206,15 @@ impl DatabaseServer {
             .expect("Failed to add privillege");
     }
 
-    pub fn add_content(&self, group_name: String, page_name: String, added_content: String) {
-        let content_page = Content {
-            groupname: Some(group_name),
-            page: page_name,
-            contentbody: Some(added_content)
-        };
-        
-        let _result = diesel::insert_into(schema::content::table)
-            .values(content_page)
-            .get_result::<Content>(&self.connect().unwrap())
-            .expect("Failed to add content");
+    pub fn get_available_groups(&self, target_user: i32) -> Vec<String> {
+        use schema::privillege::dsl::*;
+        let loaded_content = privillege
+            .filter(user_id.eq(target_user))
+            .load::<Privillege>(&self.connect().unwrap())
+            .expect("Failed to load content");
+    
+        loaded_content.iter()
+            .map(|x| -> String { x.groupname.clone() })
+            .collect()
     }
 }

@@ -48,7 +48,7 @@ pub struct Group {
 #[table_name = "content"]
 #[serde(default)]
 pub struct Content {
-    pub groupname: Option<String>,
+    pub groupname: String,
     pub page: String,
     pub contentbody: Option<String>,
 }

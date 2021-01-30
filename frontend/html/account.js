@@ -37,8 +37,8 @@ function submit_login() {
                 let expire_date = new Date(response.expire)
                 console.log("Expire date: " + expire_date);
                 set_cookie("session_id", response.session_id, expire_date);
-                window.location.href = "index.html";
-                window.location.replace("index.html");
+                window.location.href = "/home";
+                window.location.replace("/home");
             } else {
                 document.getElementById("error").innerText = response.error_msg;
             }
@@ -60,8 +60,9 @@ function submit_logout() {
         xhttp.onreadystatechange = function() {
             if(this.readyState == 4 && this.status == 200) {
                 delete_cookie("session_id");
-                window.location.href = "index.html";
-                window.location.replace("index.html");
+                console.log("Erase cookie");
+                window.location.href = "/home";
+                window.location.replace("/home");
             }
         }
 
