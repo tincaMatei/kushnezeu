@@ -12,6 +12,7 @@ function account_div() {
     if(get_cookie("session_id") != null) {
         let element = document.getElementById("login-button");
         element.parentNode.removeChild(element);
+        document.getElementById("username-display").innerText = "Username: " + get_cookie("username");
     } else {
         let element = document.getElementById("logout-button");
         element.parentNode.removeChild(element);
@@ -37,6 +38,7 @@ function submit_login() {
                 let expire_date = new Date(response.expire)
                 console.log("Expire date: " + expire_date);
                 set_cookie("session_id", response.session_id, expire_date);
+                set_cookie("username", document.forms["login"]["username"].value, expire_date);
                 window.location.href = "/home";
                 window.location.replace("/home");
             } else {
@@ -60,6 +62,7 @@ function submit_logout() {
         xhttp.onreadystatechange = function() {
             if(this.readyState == 4 && this.status == 200) {
                 delete_cookie("session_id");
+                delete_cookie("username");
                 console.log("Erase cookie");
                 window.location.href = "/home";
                 window.location.replace("/home");

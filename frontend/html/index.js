@@ -10,13 +10,12 @@ function load_home() {
                 let response = JSON.parse(this.responseText);
                 if(response.error == false) {
                     for(let i = 0; i < response.groups.length; ++i) {
-                        let obj = document.createElement("li");
                         let obj_link = document.createElement("a");
                         obj_link.href = "/content/" + response.groups[i] + "/home";
                         obj_link.innerText = response.groups[i];
-                    
-                        obj.appendChild(obj_link);
-                        document.getElementById("group-list").appendChild(obj);
+                        obj_link.className = "sidebar-button";
+
+                        document.getElementById("group-list").appendChild(obj_link);
                     }
                 }
             }
@@ -28,3 +27,15 @@ function load_home() {
         xhttp.send(query_param);
     }
 }
+
+// Load the login page
+function load_login_page() {
+    hide_login_form();
+    load_home();
+}
+
+function load_content_page() {
+    load_home();
+    load_content();
+}
+

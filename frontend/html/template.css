@@ -1,0 +1,155 @@
+@media only screen and (min-width: 680px) {
+    .body-sidebar {
+    }
+    
+    .main-content-page {
+        padding: 20px 100px;
+    }
+}
+
+@media only screen and (max-width: 680px) {
+    .main-body {
+        flex-direction: column;
+    }
+    .navigation-bar {
+        flex-direction: column;
+    }
+}
+
+body {
+    padding: 0px;
+    margin: 0px;
+}
+
+.page-container {
+    position: relative;
+    min-height: 100vh;
+    background-color: #111217;
+}
+
+.navigation-bar {
+    width: 100%;
+    background-color: black;
+    margin: 0px;
+    background-color: #14151c;
+    display: flex;
+    justify-content: center;
+}
+
+.navigation-bar > a > img {
+    display: block;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+}
+
+.navigation-bar > a {
+    margin: auto;
+}
+
+.account-div {
+    color: white;
+    padding: auto;
+    display:  flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+}
+
+.account-div > p {
+    font-family: Georgia, serif;
+    margin: auto;
+}
+
+.account-div > a {
+    color: black;
+    background-color: white;
+    border-color: gray;
+    border-radius: 10px;
+    border-width: 3px;
+    border-style: solid;
+    margin: 10px;
+    padding: 10px;
+    min-width: 80px;
+    transition-duration: 0.4s;
+    text-decoration: none;
+}
+
+.account-div > a:hover {
+    color: white;
+    background-color: black;
+    border-color: gray;
+    cursor: pointer;
+}
+
+.main-content-page {
+    margin: auto;
+    max-width: 960px;
+    width: 100%;
+    border-color: #404257;
+    border-style: hidden solid;
+    border-width: 1px;
+    background-color: #1b1e29;
+    text-justify: justify;
+    color: white;
+}
+
+.main-body {
+    background-color: #111217;
+    display: flex;
+    margin: 0px;
+    align-items: baseline;
+    padding-bottom: 8rem;
+}
+
+.body-sidebar {
+    background-color: #111217;
+    padding: 0px 20px;
+    height: auto;
+    margin: 80px auto;
+}
+
+.body-sidebar .sidebar-button {
+    display: block;
+    color: #404257;
+    border-style: none;
+    background-color: #111217;
+    padding: 10px 40px;
+    text-decoration: none;
+}
+
+.body-sidebar .sidebar-button:not(:last-child) {
+    border-width: 1px;
+    border-style: none none solid none;
+    border-color: #404257;
+}
+
+.body-sidebar .sidebar-button:hover {
+    background-color: #1d1f29;
+}
+
+.middle-div {
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    height: 8rem;
+    width: 100%;
+    font-family: 'Courier New';
+    text-align: center;
+    background-color: #14151c;
+    margin: 0px;
+    padding: 20px 0px;
+}
+
+.footer > p {
+    margin: 0px;
+    color: white;
+}
+
+#content {
+    color: white;
+    font-family: Georgia, serif;
+}
+

@@ -1,29 +1,54 @@
-<DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <meta charset="UTF-8">
 
 <head>
-    <title>Frontend</title>
+    <title>Bacdb</title>
+    <link rel="stylesheet" href="/static/template.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <script src="/static/cookie.js"></script>
 <script src="/static/account.js"></script>
+<script src="/static/index.js"></script>
 
 <script>
-window.onload = hide_login_form;
+window.onload = load_login_page;
 </script>
 
 <body>
-    <a href="/home"><p>home</p></a>
-    <p>Login:</p>
-    <form id="login" action="javascript:void(0)" onsubmit="submit_login()">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username"><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password">
-        <input type="submit" value="Submit">
-    </form>
-    <p id="error"></p>
+    <div class="page-container">
+        <div class="navigation-bar">
+            <a href="/home"><img src="/static/bacdb_logo.png"></a>
+            <div class="account-div">
+                <p id="username-display">Logged out</p>
+                <a href="/login" id="login-button">Login</a>
+                <a onclick="submit_logout()" id="logout-button">Logout</a>
+            </div>
+        </div>
+
+        <div class="main-body">
+            <div class="main-content-page">
+                <form id="login" action="javascript:void(0)" onsubmit="submit_login()">
+                    <label for="username">Username:</label><br>
+                    <input type="text" id="username" name="username"><br>
+                    <label for="password">Password:<br></label>
+                    <input type="password" id="password" name="password"><br>
+                    <input type="submit" value="Submit">
+                </form>
+                <p id="error"></p>
+            </div>
+            
+            <div class="body-sidebar" id="group-list">
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Check the code on the following repository:</p>
+            <a href="https://github.com/tincaMatei/bacdb"><img src="/static/githublogo.png" style="width:42px;height:42px;"></a>
+        </div>
+    </div>
 </body>
 
 </html>
+
