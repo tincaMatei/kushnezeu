@@ -1,3 +1,5 @@
 backend/target
 *.swp
 backend/backend
+backend/bacdb-server
+backedn/bacdb-admin

@@ -176,45 +176,6 @@ async fn main() -> tide::Result<()> {
         }))
     });
 
-    app.at("/new-account").post(|mut req: tide::Request<DatabaseServer>| async move {
-        let user: NewUser = req.body_form().await?;
-
-        req.state().add_account(&user);
-
-        Ok(format!("Created new user! {:?}", user))
-    });
-   
-    app.at("/add-group").post(|mut req: tide::Request<DatabaseServer>| async move {
-        let group: Group = req.body_form().await?;
-        println!("Adding group: {:?}", group);
-        req.state().add_group(&group);
-        println!("Added group: {}", group.name);
-
-        Ok("Added group")
-    });
-
-    app.at("/add-privillege").post(|mut req: tide::Request<DatabaseServer>| async move {
-        let mut added_privillege: PrivillegeByUsername = req.body_form().await?;
-        added_privillege.username = added_privillege.username.to_lowercase();
-        
-        let user = req.state().get_user_by_username(added_privillege.username);
-        let user = if let Some(x) = user {
-            x
-        } else {
-            return Ok("Failed to find requested user");
-        };
-        
-        assert_eq!(added_privillege.rights.len(), 4);
-        for i in 0..4 {
-            assert!(added_privillege.rights.as_bytes()[i] == b'_' ||
-                    added_privillege.rights.as_bytes()[i] == b"RWXX"[i]);
-        }
-
-        req.state().add_privillege(user.id, added_privillege.groupname, added_privillege.rights);
-        
-        Ok("Added privillege")
-    });
-
     app.at("/get-rights/:group").post(|mut req: tide::Request<DatabaseServer>| async move {
         let session: Session = req.body_form().await?;
         
