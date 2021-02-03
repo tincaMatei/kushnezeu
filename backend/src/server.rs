@@ -7,6 +7,8 @@ use self::backend::*;
 use self::models::*;
 use self::database::DatabaseServer;
 
+use bcrypt::{verify};
+
 use tide::prelude::*;
 
 pub mod database;
@@ -27,7 +29,7 @@ async fn main() -> tide::Result<()> {
         
         // We found an entry in the database of the given user
         if let Some(user_from_db) = user_from_db {
-            if user_from_db.password == user.password { // The password matches
+            if verify(&user.password, &user_from_db.password).unwrap() { // The password matches
                 let new_session = req.state().create_new_session(user_from_db.id);
                 
                 if let Some(new_session) = new_session {

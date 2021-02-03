@@ -8,6 +8,8 @@ use self::models::*;
 use self::database::DatabaseServer;
 use std::env;
 
+use bcrypt::{hash, DEFAULT_COST};
+
 pub mod database;
 
 fn display_instructions() {
@@ -34,12 +36,11 @@ fn main() {
             display_instructions();
         }
     
-        let (username, password) = (args[2].to_lowercase(), args[3].clone());
+        let (username, password) = (args[2].to_lowercase(), hash(&args[3], DEFAULT_COST).unwrap());
         let user = NewUser {
             username,
             password,
         };
-
         server.add_account(&user);
     }
     "add-group" => {
@@ -78,7 +79,7 @@ fn main() {
         }
         for i in 0..4 {
             if added_privillege.rights.as_bytes()[i] != b'_' &&
-               added_privillege.rights.as_bytes()[i] == b"RWXX"[i] {
+               added_privillege.rights.as_bytes()[i] != b"RWXX"[i] {
                 display_instructions();
             }
         }
