@@ -90,6 +90,25 @@ async fn main() -> tide::Result<()> {
         let group_name = req.param("group").expect("Failed to get group name");
         let page_name = req.param("page").expect("Failed to get page name");
 
+        if group_name == "*" {
+            let content = req.state().get_content(group_name.to_string(), page_name.to_string());
+            let content = if let Some(content) = content {
+                content
+            } else {
+                return Ok(json!({
+                    "error" : false,
+                    "error_msg" : "This page is empty",
+                    "content" : "This page is empty"
+                }))
+            };
+
+            return Ok(json!({
+                "error" : false,
+                "error_msg" : "Content loaded properly",
+                "content" : content.contentbody
+            }))
+        }
+
         let session = req.state().get_session_by_id(user_session.session_id);
         let session = if let Some(x) = session {
             x

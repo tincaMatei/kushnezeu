@@ -26,6 +26,22 @@ function load_home() {
         xhttp.open("POST", "/api/list-groups", true);
         xhttp.send(query_param);
     }
+
+    let xhttp2 = new XMLHttpRequest;
+    xhttp2.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            let response = JSON.parse(this.responseText);
+            if(response.error == false) {
+                let conv = new showdown.Converter()
+                document.getElementById("content").innerHTML = conv.makeHtml(response.content);
+            } else {
+                document.getElementById("content").innerHTML = response.error_msg;
+            }
+        }
+    }
+
+    xhttp2.open("POST", "/api/content/*/home/read", true);
+    xhttp2.send(null);
 }
 
 // Load the login page
