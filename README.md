@@ -5,7 +5,7 @@ This is a small website in which you can have groups that can edit different pag
 # Components
 
 * an Nginx server that returns the static content from the frontend
-* a PostgresQL
+* a PostgresQL database
 * a Rust backend that manages the information from the database
 * a rust binary crate that can be used for administrator management
 
