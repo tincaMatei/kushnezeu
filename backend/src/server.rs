@@ -90,7 +90,7 @@ async fn main() -> tide::Result<()> {
         let group_name = req.param("group").expect("Failed to get group name");
         let page_name = req.param("page").expect("Failed to get page name");
 
-        if group_name == "*" {
+        if group_name == "home" {
             let content = req.state().get_content(group_name.to_string(), page_name.to_string());
             let content = if let Some(content) = content {
                 content

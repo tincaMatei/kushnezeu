@@ -38,7 +38,7 @@ window.onload = load_content_page;
                     <button id="edit-button" type="submit" value="Edit" onclick="open_writing()">Edit</button>
                     <p id="error-msg"></p>
                     <div id="text-editor" style="visibility: hidden">
-                        <textarea style="width:100%;height:8rem;resize:none;" form="content-body" id="content-textarea" name="content-textarea" wrap="hard"></textarea>
+                        <textarea style="width:100%;height:8rem;resize:vertical;" form="content-body" id="content-textarea" name="content-textarea" wrap="hard"></textarea>
                         <form id="write-content" action="javascript:void(0)">
                             <label for="content-body">Content<br></label>
                             <button id="cancel-button" type="submit" name="action" value="Cancel" onclick="cancel_editing()">Cancel</button>

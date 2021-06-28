@@ -79,7 +79,7 @@ fn main() {
         }
         for i in 0..4 {
             if added_privillege.rights.as_bytes()[i] != b'_' &&
-               added_privillege.rights.as_bytes()[i] != b"RWXX"[i] {
+               added_privillege.rights.as_bytes()[i] != b"RWJX"[i] {
                 display_instructions();
             }
         }

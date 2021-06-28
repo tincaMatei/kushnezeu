@@ -1,7 +1,8 @@
 function load_content() {
     let path_array = window.location.pathname.split('/');
+    console.log(path_array);
     let session_id = get_cookie("session_id");
-    if(path_array.length == 4 && session_id != null) {
+    if(path_array.length == 3 && session_id != null) {
         let xhttp = new XMLHttpRequest;
         let query_param = "session_id=" + session_id;
 
@@ -19,7 +20,7 @@ function load_content() {
             }
         };
         
-        let pathname = "/api/content/" + path_array[2] + "/" + path_array[3] + "/read";
+        let pathname = "/api/content/" + path_array[1] + "/" + path_array[2] + "/read";
         console.log(pathname);
         xhttp.open("POST", pathname, true);
         xhttp.send(query_param);
@@ -36,7 +37,7 @@ function load_content() {
             }
         };
 
-        let pathname2 = "/api/get-rights/" + path_array[2];
+        let pathname2 = "/api/get-rights/" + path_array[1];
         xhttp2.open("POST", pathname2, true);
         xhttp2.send(query_param);
     } else if(session_id == null) {
@@ -90,7 +91,7 @@ function submit_content_edit() {
     let query_param = "session_id=" + get_cookie("session_id") 
                     + "&content=" + document.getElementById("content-textarea").value;
     let path_array = window.location.pathname.split('/');
-    let path_name = "/api/content/" + path_array[2] + "/" + path_array[3] + "/write";
+    let path_name = "/api/content/" + path_array[1] + "/" + path_array[2] + "/write";
     xhttp.open("POST", path_name, true);
     xhttp.send(query_param);
 }
