@@ -1,6 +1,6 @@
-# BacDB
+# [Kushnezeu.go.ro](http://www.kushnezeu.go.ro)
 
-This is a small website in which you can have groups that can edit different pages. You can manage the userrs, the groups and the privilleges for each group.
+This is a small web server used to host my blog. It can also be used to share and edit content privately by having accounts. The accounts can only be made by using some commands.
 
 # Components
 
