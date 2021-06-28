@@ -4,3 +4,4 @@ backend/backend
 backend/bacdb-server
 backend/bacdb-admin
 frontend/html/home/*.html
+frontend/html/template.html
