@@ -41,6 +41,7 @@ body {
     max-height: 120px;
     width: auto;
     height: auto;
+    max-width: 100%;
 }
 
 .navigation-bar > a {
@@ -100,6 +101,7 @@ body {
     margin: 0px;
     align-items: baseline;
     padding-bottom: 8rem;
+    margin: auto;
 }
 
 .body-sidebar {
@@ -132,14 +134,14 @@ body {
 }
 
 .footer {
-    position: absolute;
+    position: relative;
     bottom: 0;
     height: 8rem;
     width: 100%;
     font-family: 'Courier New';
     text-align: center;
     background-color: #14151c;
-    margin: 0px;
+    margin-top: -8rem;
     padding: 20px 0px;
 }
 
@@ -150,6 +152,19 @@ body {
 
 #content {
     color: white;
-    font-family: Georgia, serif;
+    font-family: "Courier New", monospace;
+}
+
+.article {
+    border-width: 2px;
+    border-style: solid;
+    border-color: #404257;
+    background-color: #404257;
+    padding: 10px 10px;
+    font-family: "Courier New", monospace;
+}
+
+.article > a {
+    color: white;
 }
 
