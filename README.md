@@ -1,4 +1,4 @@
-# [Kushnezeu.go.ro](http://www.kushnezeu.go.ro)
+# [Kushnezeu.go.ro](http://kushnezeu.go.ro)
 
 This is a small web server used to host my blog. It can also be used to share and edit content privately by having accounts. The accounts can only be made by using some commands.
 
