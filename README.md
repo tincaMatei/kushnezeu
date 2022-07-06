@@ -1,4 +1,4 @@
-# [Kushnez.eu](http://kushnezeu.eu)
+# [Kushnez.eu](http://kushnez.eu)
 
 This is a small web server used to host my blog. It can also be used to share and edit content privately by having accounts. The accounts can only be made by using some commands.
 
